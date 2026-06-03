@@ -17,6 +17,19 @@ export default function SellerPage() {
     stockQuantity: "1000",
     pricePerUnit: "10",
   });
+  const [products, setProducts] = useState<any[]>([]);
+
+  async function loadProducts(sellerId: string) {
+    try {
+      const res = await fetch('/api/products');
+      if (res.ok) {
+        const data = await res.json();
+        setProducts((data || []).filter((p: any) => p.sellerId === sellerId));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   useEffect(() => {
     const storedUser = JSON.parse(
@@ -30,6 +43,7 @@ export default function SellerPage() {
 
     setUser(storedUser);
     setAuthorized(true);
+    loadProducts(storedUser.id);
   }, [router]);
 
   async function submit() {
@@ -52,8 +66,19 @@ export default function SellerPage() {
     });
 
     if (!res.ok) {
-      const error = await res.json();
-      alert(error?.error || "Unable to add product");
+      let errorBody = null;
+      try {
+        errorBody = await res.json();
+      } catch (e) {
+        try {
+          const txt = await res.text();
+          errorBody = { error: txt };
+        } catch (e) {
+          errorBody = null;
+        }
+      }
+
+      alert(errorBody?.error || 'Unable to add product');
       return;
     }
 
@@ -68,6 +93,8 @@ export default function SellerPage() {
     });
 
     alert("Product added successfully.");
+    // refresh products list
+    if (user?.id) await loadProducts(user.id);
   }
 
   if (!authorized) {
@@ -177,6 +204,23 @@ export default function SellerPage() {
           >
             Add Product
           </button>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm shadow-slate-200/50">
+        <h2 className="text-2xl font-semibold text-slate-950 mb-4">Your Products</h2>
+
+        {products.length === 0 && <div className="text-slate-600">You have not listed any products yet.</div>}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {products.map((p: any) => (
+            <div key={p.id} className="rounded-xl border p-4">
+              <div className="font-medium">{p.name}</div>
+              <div className="text-sm text-slate-600">SKU: {p.sku}</div>
+              <div className="text-sm text-slate-600">Stock: {p.stockQuantity} {p.baseUnit}</div>
+              <div className="text-sm text-slate-600">Price per {p.baseUnit}: ₹{p.pricePerUnit}</div>
+            </div>
+          ))}
         </div>
       </section>
     </main>

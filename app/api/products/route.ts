@@ -54,18 +54,27 @@ export async function POST(req: Request) {
   const stockBase = toBaseQuantity(Number(body.stockQuantity), body.baseUnit);
   const priceBase = toBasePrice(Number(body.pricePerUnit), body.baseUnit);
 
-  const product = await prisma.product.create({
-    data: {
-      name: body.name,
-      description: body.description,
-      sku: body.sku,
-      dimension: body.dimension,
-      baseUnit: body.baseUnit,
-      stockQuantity: stockBase,
-      pricePerUnit: priceBase,
-      sellerId: body.sellerId,
-    },
-  });
+  try {
+    const product = await prisma.product.create({
+      data: {
+        name: body.name,
+        description: body.description,
+        sku: body.sku,
+        dimension: body.dimension,
+        baseUnit: body.baseUnit,
+        stockQuantity: stockBase,
+        pricePerUnit: priceBase,
+        sellerId: body.sellerId,
+      },
+    });
 
-  return NextResponse.json(product);
+    return NextResponse.json(product);
+  } catch (err: any) {
+    // handle unique sku violation
+    if (err?.code === 'P2002' && err?.meta?.target?.includes('sku')) {
+      return NextResponse.json({ error: 'SKU already exists' }, { status: 400 });
+    }
+
+    return NextResponse.json({ error: err?.message || 'Unable to create product' }, { status: 500 });
+  }
 }
