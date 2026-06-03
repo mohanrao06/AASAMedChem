@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SELLER
+  BUYER
+}
+
+enum ProductDimension {
+  WEIGHT
+  VOLUME
+  COUNT
+}
+
+enum Unit {
+  G
+  KG
+  L
+  ML
+  UNIT
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+
+  products  Product[]
+  orders    Order[]
+
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  sku           String   @unique
+  dimension     ProductDimension
+  baseUnit      Unit
+  stockQuantity Decimal  @db.Decimal(20,6)
+  pricePerUnit  Decimal  @db.Decimal(20,6)
+
+  sellerId      String
+  seller        User @relation(fields: [sellerId], references: [id])
+
+  orderItems    OrderItem[]
+  createdAt     DateTime @default(now())
+}
+
+model Order {
+  id          String @id @default(cuid())
+  buyerId     String
+  buyer       User @relation(fields: [buyerId], references: [id])
+
+  totalAmount Decimal @db.Decimal(20,6)
+  status      OrderStatus @default(PENDING)
+
+  items       OrderItem[]
+  createdAt   DateTime @default(now())
+}
+
+model OrderItem {
+  id                    String @id @default(cuid())
+
+  orderId               String
+  productId             String
+
+  orderedQuantity       Decimal @db.Decimal(20,6)
+  orderedUnit           String
+
+  convertedBaseQuantity Decimal @db.Decimal(20,6)
+
+  price                 Decimal @db.Decimal(20,6)
+
+  order                 Order @relation(fields: [orderId], references: [id])
+  product               Product @relation(fields: [productId], references: [id])
+}
