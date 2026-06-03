@@ -22,7 +22,7 @@ export default function AdminPage() {
   const [authorized, setAuthorized] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
-  const [stats, setStats] = useState({ buyers: 0, sellers: 0, orders: 0, products: 0 });
+  const [stats, setStats] = useState({ buyers: 0, sellers: 0, orders: 0, products: 0, totalOrderValue: 0 });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");

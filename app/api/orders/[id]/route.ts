@@ -19,7 +19,7 @@ function toBaseQuantity(qty: number, unit: string) {
   }
 }
 
-export async function DELETE(req: Request) {
+export async function DELETE(req: Request, context: any) {
   try {
     const url = new URL(req.url);
     const sellerId = url.searchParams.get('sellerId');
@@ -53,7 +53,7 @@ export async function DELETE(req: Request) {
   }
 }
 
-export async function PATCH(req: Request) {
+export async function PATCH(req: Request, context: any) {
   try {
     const url = new URL(req.url);
     const orderId = decodeURIComponent(url.pathname.split('/').filter(Boolean).pop() || '');

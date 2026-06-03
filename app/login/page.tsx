@@ -1,35 +1,43 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const role = searchParams.get("role");
+  const [role, setRole] = useState<string | null>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    // Auto-fill seeded test credentials for convenience during development
-    if (!role) return;
+    // read role from window location on client
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const r = params.get("role");
+      setRole(r);
 
-    if (role === "ADMIN") {
-      setEmail("admin@test.com");
-      setPassword("admin123");
-    }
+      // Auto-fill seeded test credentials for convenience during development
+      if (!r) return;
 
-    if (role === "SELLER") {
-      setEmail("seller@test.com");
-      setPassword("seller123");
-    }
+      if (r === "ADMIN") {
+        setEmail("admin@test.com");
+        setPassword("admin123");
+      }
 
-    if (role === "BUYER") {
-      setEmail("buyer@test.com");
-      setPassword("buyer123");
+      if (r === "SELLER") {
+        setEmail("seller@test.com");
+        setPassword("seller123");
+      }
+
+      if (r === "BUYER") {
+        setEmail("buyer@test.com");
+        setPassword("buyer123");
+      }
     }
-  }, [role]);
+  }, []);
 
   async function login() {
     const res = await fetch("/api/login", {
