@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
+export const dynamic = "force-dynamic";
+
 function toBaseQuantity(qty: number, unit: string) {
   const u = (unit || 'G').toUpperCase();
   switch (u) {
